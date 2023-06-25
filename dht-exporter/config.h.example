@@ -1,0 +1,13 @@
+#define SSID "xxxxxx"
+#define PASS "xxxxxxxxxx"
+
+#define PRIVATE_KEY "AF..="
+#define PEER_PUBLIC_KEY "Fj..F0="
+#define ENDPOINT_ADDRESS "1.1.1.1"
+#define ENDPOINT_PORT 51820
+#define LOCAL_IP "10.1.1.3"
+
+#define DATAPIN 4 // DATA Pin 注意，0和2是都碰到了兼容性问题
+#define DHTTYPE DHT22 // SENSOR DHT11/DHT22
+
+#define EXPORTER_PORT 8663

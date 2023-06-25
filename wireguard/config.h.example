@@ -1,0 +1,11 @@
+#define SSID "xxxxxx"
+#define PASS "xxxxxxxxxx"
+
+#define PRIVATE_KEY "AF..="
+#define PEER_PUBLIC_KEY "Fj..F0="
+#define ENDPOINT_ADDRESS "1.1.1.1"
+#define ENDPOINT_PORT 51820
+#define LOCAL_IP "10.1.1.3"
+#define PEER_IP "10.10.10.10" // 这里写公网 ip 无法 ping 通，取消wireguard就可以，需要注意
+
+

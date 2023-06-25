@@ -1,0 +1,4 @@
+#define SSID "xxxxxx"
+#define PASS "xxxxxxxxxx"
+
+#define PING_IP "114.114.114.114"
