@@ -9,11 +9,12 @@
 
 static WireGuard wg;
 
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 3600 * 8;
-const int   daylightOffset_sec = 0;
+const char* ntpServer = NTP_SERVER;
+const long gmtOffset_sec = 3600 * 8;
+const int daylightOffset_sec = 0;
 
 IPAddress local_ip;
+IPAddress peer_ip;
 
 float temperature;
 float humidity;
@@ -24,22 +25,22 @@ DHT dht(DATAPIN, DHTTYPE);
 
 WebServer server(EXPORTER_PORT);
 
-void metrics() {  
+void metrics() {
   String message;
-  message += F("dhtexp_temperature "); 
-  message += String(temperature); 
+  message += F("dhtexp_temperature ");
+  message += String(temperature);
   message += F("\ndhtexp_humidity ");
-  message += String(humidity); 
-  
+  message += String(humidity);
+
   server.send(200, "text/plain", message);
 }
 
 void restServerRouting() {
-    server.on("/", HTTP_GET, []() {
-        server.send(200, F("text/html"),
-            F("Get all data at /metrics"));
-    });
-    server.on(F("/metrics"), HTTP_GET, metrics);
+  server.on("/", HTTP_GET, []() {
+    server.send(200, F("text/html"),
+                F("Get all data at /metrics"));
+  });
+  server.on(F("/metrics"), HTTP_GET, metrics);
 }
 
 void setup() {
@@ -47,17 +48,17 @@ void setup() {
   Serial.setTimeout(2000);
 
   // Wait for serial to initialize.
-  while(!Serial) { }
+  while (!Serial) {}
 
   dht.begin();
-  
+
   Serial.println("Connecting to the AP...");
   delay(1000);
 
-  WiFi.mode(WIFI_STA); // Optional
+  WiFi.mode(WIFI_STA);  // Optional
   WiFi.begin(SSID, PASS);
   Serial.println("\nConnecting");
-  
+
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(100);
@@ -68,14 +69,15 @@ void setup() {
   Serial.println(WiFi.localIP());
   Serial.println(WiFi.macAddress());
 
-  restServerRouting();
-  server.begin();
-  Serial.println("HTTP server started");
-
   // We configure the NTP server
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  struct tm timeinfo;
+  while (!getLocalTime(&timeinfo)) {
+    Serial.print("x");
+  }
 
   local_ip.fromString(LOCAL_IP);
+  peer_ip.fromString(PEER_IP);
 
   wg.begin(
     local_ip,
@@ -83,10 +85,18 @@ void setup() {
     ENDPOINT_ADDRESS,
     PEER_PUBLIC_KEY,
     ENDPOINT_PORT);
+
+  while (!Ping.ping(peer_ip)) {
+    Serial.print("-");
+  }
+
+  restServerRouting();
+  server.begin();
+  Serial.println("HTTP server started");
 }
 
-void getData(){
-  temperature = dht.readTemperature(); // Gets the values of the temperature
+void getData() {
+  temperature = dht.readTemperature();  // Gets the values of the temperature
   humidity = dht.readHumidity();
 
   // Check if any reads failed and exit early (to try again).
@@ -98,7 +108,7 @@ void getData(){
 void loop() {
   struct tm timeinfo;
 
-  if ( millis() - lastSend > 1000 ) { // Update and send only after 1 seconds
+  if (millis() - lastSend > 1000) {  // Update and send only after 1 seconds
     getData();
     lastSend = millis();
   }
